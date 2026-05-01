@@ -63,12 +63,12 @@ server.listen(PORT, () => {
         process.stdout.write('\x1Bc'); 
         const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : "0.00";
         
-        process.stdout.write(
-            `\x1b[34mActive:\x1b[0m \x1b[32m${stats.connections}\x1b[0m ` +
-            `\x1b[34mIng:\x1b[0m \x1b[32m${stats.impressions}\x1b[0m ` +
-            `\x1b[34mClicks:\x1b[0m \x1b[32m${stats.clicks}\x1b[0m ` +
-            `\x1b[34mCTR\x1b[0m \x1b[33m${ctr}%\x1b[0m\n`
-        );
+        const active = `\x1b[36mActive:\x1b[0m \x1b[37m${stats.connections}\x1b[0m`; 
+        const ing = `\x1b[32mIng:\x1b[0m \x1b[37m${stats.impressions}\x1b[0m`;       
+        const clicks = `\x1b[33mClicks:\x1b[0m \x1b[37m${stats.clicks}\x1b[0m`;     
+        const ctrOut = `\x1b[35mCTR:\x1b[0m \x1b[37m${ctr}%\x1b[0m`;                
+
+        process.stdout.write(`${active}  ${ing}  ${clicks}  ${ctrOut}\n`);
     };
 
     setInterval(updateConsole, 2000); 
