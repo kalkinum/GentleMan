@@ -19,7 +19,9 @@ const secureData = (data) => {
     return Buffer.concat([cipher.update(JSON.stringify(data)), cipher.final()]).toString('hex');
 };
 
+
 let stats = { connections: 0, impressions: 0, clicks: 0, startTime: Date.now() };
+
 
 app.get('/app-ads.txt', (req, res) => {
     try {
@@ -30,8 +32,10 @@ app.get('/app-ads.txt', (req, res) => {
     }
 });
 
+
 io.on('connection', (socket) => {
     stats.connections++;
+
     const currentCTR = stats.impressions > 0 ? (stats.clicks / stats.impressions) : 0;
     const nextTask = currentCTR < 0.02 ? "ENGAGE" : "GHOST_WATCH";
 
@@ -56,19 +60,28 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => { stats.connections--; });
 });
 
+
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-    process.stdout.write('\x1Bc'); 
-    
-    const updateConsole = () => {
-        const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : "0.00";
-        
 
-        process.stdout.write('\x1B[H'); 
-        console.log('\n \x1b[1m\x1b[32mGentleMan BOT\x1b[0m'); 
-        console.log(' \x1b[90m------------------------------------------\x1b[0m');
-        process.stdout.write(` \x1b[36mActive:\x1b[0m ${stats.connections} | \x1b[32mImp:\x1b[0m ${stats.impressions} | \x1b[33mClicks:\x1b[0m ${stats.clicks} | \x1b[35mCTR:\x1b[0m ${ctr}%      \r`);
+    const updateConsole = () => {
+        process.stdout.write('\x1Bc');
+        const uptime = Math.round((Date.now() - stats.startTime) / 60000);
+        const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : "0.00";
+
+        console.log('\x1b[1m\x1b[34m' + '==============================================' + '\x1b[0m');
+        console.log('\x1b[1m\x1b[32m' + '   GENTLEMAN AI COMMAND CENTER v3.0 [LIVE]   ' + '\x1b[0m');
+        console.log('\x1b[1m\x1b[34m' + '==============================================' + '\x1b[0m');
+        console.log(` \x1b[36mSTATUS:\x1b[0m Online       \x1b[36mPORT:\x1b[0m ${PORT}`);
+        console.log(` \x1b[36mGAME ID:\x1b[0m ${GAME_ID}  \x1b[36mUPTIME:\x1b[0m ${uptime} min`);
+        console.log('\x1b[34m' + '----------------------------------------------' + '\x1b[0m');
+        console.log(` \x1b[32mACTIVE BOTS:\x1b[0m  ${stats.connections}`);
+        console.log(` \x1b[32mIMPRESSIONS:\x1b[0m  ${stats.impressions}`);
+        console.log(` \x1b[32mCLICKS:\x1b[0m       ${stats.clicks}`);
+        console.log(` \x1b[33mCURRENT CTR:\x1b[0m   ${ctr}%`);
+        console.log('\x1b[34m' + '----------------------------------------------' + '\x1b[0m');
+        console.log(' \x1b[90mWaiting for bot signals...\x1b[0m');
     };
 
-    setInterval(updateConsole, 1000); 
+    setInterval(updateConsole, 2000); 
 });
