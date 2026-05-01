@@ -60,7 +60,7 @@ io.on('connection', (socket) => {
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
     const updateConsole = () => {
-        process.stdout.write('\x1Bc'); 
+
         const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : "0.00";
         
         const active = `\x1b[36mActive:\x1b[0m \x1b[37m${stats.connections}\x1b[0m`; 
@@ -68,7 +68,7 @@ server.listen(PORT, () => {
         const clicks = `\x1b[33mClicks:\x1b[0m \x1b[37m${stats.clicks}\x1b[0m`;     
         const ctrOut = `\x1b[35mCTR:\x1b[0m \x1b[37m${ctr}%\x1b[0m`;                
 
-        process.stdout.write(`${active}  ${ing}  ${clicks}  ${ctrOut}\n`);
+        console.log(`${active}  ${ing}  ${clicks}  ${ctrOut}`);
     };
 
     setInterval(updateConsole, 2000); 
