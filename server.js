@@ -19,9 +19,7 @@ const secureData = (data) => {
     return Buffer.concat([cipher.update(JSON.stringify(data)), cipher.final()]).toString('hex');
 };
 
-
 let stats = { connections: 0, impressions: 0, clicks: 0, startTime: Date.now() };
-
 
 app.get('/app-ads.txt', (req, res) => {
     try {
@@ -31,7 +29,6 @@ app.get('/app-ads.txt', (req, res) => {
         res.status(500).send("app-ads.txt not found in root.");
     }
 });
-
 
 io.on('connection', (socket) => {
     stats.connections++;
@@ -60,27 +57,12 @@ io.on('connection', (socket) => {
     socket.on('disconnect', () => { stats.connections--; });
 });
 
-
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, () => {
-
     const updateConsole = () => {
-        process.stdout.write('\x1Bc');
-        const uptime = Math.round((Date.now() - stats.startTime) / 60000);
+        process.stdout.write('\x1Bc'); 
         const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : "0.00";
-
-        console.log('\x1b[1m\x1b[34m' + '==============================================' + '\x1b[0m');
-        console.log('\x1b[1m\x1b[32m' + '   GENTLEMAN AI COMMAND CENTER v3.0 [LIVE]   ' + '\x1b[0m');
-        console.log('\x1b[1m\x1b[34m' + '==============================================' + '\x1b[0m');
-        console.log(` \x1b[36mSTATUS:\x1b[0m Online       \x1b[36mPORT:\x1b[0m ${PORT}`);
-        console.log(` \x1b[36mGAME ID:\x1b[0m ${GAME_ID}  \x1b[36mUPTIME:\x1b[0m ${uptime} min`);
-        console.log('\x1b[34m' + '----------------------------------------------' + '\x1b[0m');
-        console.log(` \x1b[32mACTIVE BOTS:\x1b[0m  ${stats.connections}`);
-        console.log(` \x1b[32mIMPRESSIONS:\x1b[0m  ${stats.impressions}`);
-        console.log(` \x1b[32mCLICKS:\x1b[0m       ${stats.clicks}`);
-        console.log(` \x1b[33mCURRENT CTR:\x1b[0m   ${ctr}%`);
-        console.log('\x1b[34m' + '----------------------------------------------' + '\x1b[0m');
-        console.log(' \x1b[90mWaiting for bot signals...\x1b[0m');
+        process.stdout.write(`Active: ${stats.connections} Ing: ${stats.impressions} Clicks: ${stats.clicks} CTR ${ctr}%\n`);
     };
 
     setInterval(updateConsole, 2000); 
