@@ -1,75 +1,37 @@
-require('dotenv').config();
 const express = require('express');
-const http = require('http');
-const { Server } = require('socket.io');
-const crypto = require('crypto');
-const fs = require('fs');
-
+const axios = require('axios');
 const app = express();
-const server = http.createServer(app);
-const io = new Server(server, { cors: { origin: "*" } });
+const port = process.env.PORT || 3000;
 
-const MASTER_SALT = process.env.SECRET_SALT || "DEFAULT_SALT_2026";
-const GAME_ID = process.env.UNITY_GAME_ID;
+app.use(express.json());
 
-const secureData = (data) => {
-    const cipher = crypto.createCipheriv('aes-256-cbc', 
-        crypto.scryptSync(MASTER_SALT, 'salt', 32), 
-        Buffer.alloc(16, 0));
-    return Buffer.concat([cipher.update(JSON.stringify(data)), cipher.final()]).toString('hex');
-};
+const MACRODROID_URL = "https://trigger.macrodroid.com/8c707e77-2775-44f4-8685-cfe0240b79e5/gentleman_cmd";
 
-let stats = { connections: 0, impressions: 0, clicks: 0, startTime: Date.now() };
-
-app.get('/app-ads.txt', (req, res) => {
-    try {
-        const content = fs.readFileSync('./app-ads.txt', 'utf8');
-        res.type('text/plain').send(content);
-    } catch (err) {
-        res.status(500).send("app-ads.txt not found in root.");
-    }
+// Home route
+app.get('/', (req, res) => {
+  res.send('Gentleman Bot Active');
 });
 
-io.on('connection', (socket) => {
-    stats.connections++;
-
-    const currentCTR = stats.impressions > 0 ? (stats.clicks / stats.impressions) : 0;
-    const nextTask = currentCTR < 0.02 ? "ENGAGE" : "GHOST_WATCH";
-
-    const payload = secureData({
-        gid: GAME_ID,
-        p_ids: {
-            v: process.env.ID_VIDEO,
-            i: process.env.ID_INTERSTITIAL,
-            b: process.env.ID_BANNER
-        },
-        task: nextTask,
-        jitter: Math.floor(Math.random() * 30000) + 15000
-    });
-
-    socket.emit('cmd', payload);
-
-    socket.on('ack', (data) => {
-        if (data.type === 'imp') stats.impressions++;
-        if (data.type === 'clk') stats.clicks++;
-    });
-
-    socket.on('disconnect', () => { stats.connections--; });
+// Trigger command
+app.get('/trigger-click', async (req, res) => {
+  try {
+    await axios.get(MACRODROID_URL);
+    console.log(">>> [SIGNAL SENT]: Bot ko command bhej di gayi hai.");
+    res.status(200).send("Signal Sent");
+  } catch (err) {
+    console.log("!!! [ERROR]: Signal nahi gaya.");
+    res.status(500).send("Error");
+  }
 });
 
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    const updateConsole = () => {
+// Clean Report from Bot
+app.post('/', (req, res) => {
+  // Sirf bot ka status aur message console mein dikhega
+  const { status, message } = req.body;
+  console.log(`<<< [BOT REPORT]: Status: ${status} | Msg: ${message}`);
+  res.status(200).send("OK");
+});
 
-        const ctr = stats.impressions > 0 ? ((stats.clicks / stats.impressions) * 100).toFixed(2) : "0.00";
-        
-        const active = `\x1b[36mActive:\x1b[0m \x1b[37m${stats.connections}\x1b[0m`; 
-        const ing = `\x1b[32mIng:\x1b[0m \x1b[37m${stats.impressions}\x1b[0m`;       
-        const clicks = `\x1b[33mClicks:\x1b[0m \x1b[37m${stats.clicks}\x1b[0m`;     
-        const ctrOut = `\x1b[35mCTR:\x1b[0m \x1b[37m${ctr}%\x1b[0m`;                
-
-        console.log(`${active}  ${ing}  ${clicks}  ${ctrOut}`);
-    };
-
-    setInterval(updateConsole, 2000); 
+app.listen(port, () => {
+  console.log(`--- Server Started on Port ${port} ---`);
 });
